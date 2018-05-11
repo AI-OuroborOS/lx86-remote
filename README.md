@@ -1,15 +1,15 @@
-# Pioneer SC-LX86 remote
+# gControl-LX86
 
 ## Introduction
 
-This gnome application is a remote control for Pioneer SC-LX86 AVR. 
+gControl-lx86 is a gnome application. The goal is to create a remote control for Pioneer SC-LX86 AVR. 
 
 ## Features
 
-For the moment the application is not working. But For the fist version, it's will do :
+For the moment the application is not working. But here are the list of feature function.
 
 * Discover the amplifier with zeroconf protocol
-    * To bew sure it's will working name your avr with the name SC-LX86
+    * To do it, you need to name your avr the name SC-LX86
 * Connect to the device
 * Power off the device
 * change volume

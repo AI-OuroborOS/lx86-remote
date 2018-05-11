@@ -14,24 +14,11 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from view import View
 from log import Log
-
-
-import getpass
-import sys
 import telnetlib
 from zeroconf import ServiceBrowser, Zeroconf
 import socket
-
-
-class Discovery(object):
-
-    def remove_service(self, zeroconf, type, name):
-        print("Service %s removed" % (name,))
-
-    def add_service(self, zeroconf, type, name):
-        info = zeroconf.get_service_info(type, name)
-
-        print("Service %s added, at address: %s " % (name, socket.inet_ntoa(info.address)))
+import sys
+from discovery import Discovery
 
 
 class Handler:
@@ -84,6 +71,12 @@ class Controller:
         self.logger.debug("Controller start view")
         self.logger.debug("View is starting")
 
+        zeroconf = Zeroconf()
+        listener = Discovery(self.logger)
+        browser = ServiceBrowser(zeroconf, "_http._tcp.local.", listener)
+        listener.connect('ampli-found',self.found)
+    def found(self,str):
+        self.logger.debug("Found "+str)
     def __del__(self):
         self.newClass = None
         self.database = None
