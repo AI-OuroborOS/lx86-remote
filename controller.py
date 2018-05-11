@@ -11,7 +11,7 @@ Date       | Exp.
 """
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, GObject
 from view import View
 from log import Log
 import telnetlib
@@ -58,27 +58,50 @@ class Handler:
 
 
 class Controller:
-
     def __init__(self):
 
+        self.address_ip = None
         self._view = View()
-        label = self._view.builder.get_object("txtBuffer")
-        buffer = label.get_buffer()
-        self.logger = Log(label).get_logger()
+        self.label = self._view.builder.get_object("txtBuffer")
+        self.connect_bt = self._view.builder.get_object("btConnect")
+        self.buffer = self.label.get_buffer()
+        self.logger = Log(self.label).get_logger()
         self._view.builder.connect_signals(Handler(self.logger))
         self.logger.debug("Controller is starting")
         self.logger.debug("Controller start database")
         self.logger.debug("Controller start view")
         self.logger.debug("View is starting")
+        self.zeroconf = None
+        self.listener = None
+        self.browser = None
+        self.connect_bt.visible = False
+        self.start_discover()
 
-        zeroconf = Zeroconf()
-        listener = Discovery(self.logger)
-        browser = ServiceBrowser(zeroconf, "_http._tcp.local.", listener)
-        listener.connect('ampli-found',self.found)
-    def found(self,str):
-        self.logger.debug("Found "+str)
+    def start_discover(self):
+        self.zeroconf = Zeroconf()
+        self.listener = Discovery(self.logger)
+        self.browser = ServiceBrowser(self.zeroconf, "_http._tcp.local.", self.listener)
+        self.listener.connect('ampli-found', self.found)
+        self.listener.connect('error-found', self.error)
+
+    def error(self,arg):
+        self.logger.debug("From controller error found on discovery")
+        self.browser.cancel()
+        self.zeroconf.close()
+        self.logger.debug("From controller restart zeroconf")
+        self.start_discover()
+
+    def found(self,input,ip):
+        self.logger.debug("From controller Found "+str(ip))
+        self.address_ip = ip
+        self.connect_bt.visible = True
+
     def __del__(self):
-        self.newClass = None
-        self.database = None
-        self.menu = None
+        self.logger = None
+        self.zeroconf = None
+        self.listener = None
+        self.browser = None
+        self.buffer = None
+        self.label = None
+
 

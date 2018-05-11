@@ -40,6 +40,18 @@
           </object>
         </child>
         <child>
+          <object class="GtkButton" id="btConnect">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="image">bConnect</property>
+            <signal name="clicked" handler="onConnect" swapped="no"/>
+          </object>
+          <packing>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkButton" id="btClose">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
@@ -59,19 +71,6 @@
             <property name="receives_default">True</property>
             <property name="image">Parameters</property>
             <signal name="clicked" handler="onParameters" swapped="no"/>
-          </object>
-          <packing>
-            <property name="pack_type">end</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="btConnect">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="image">bConnect</property>
-            <signal name="clicked" handler="onConnect" swapped="no"/>
           </object>
           <packing>
             <property name="pack_type">end</property>

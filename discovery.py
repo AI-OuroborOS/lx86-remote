@@ -8,7 +8,10 @@ from gi.repository import Gtk,GObject
 
 class Discovery(GObject.GObject):
 
-    __GSignals={'ampli-found':(GObject.SIGNAL_RUN_FIRST,None,(str,))}
+    __gsignals__ ={
+        'ampli-found': (GObject.SIGNAL_RUN_FIRST, None, (str,)),
+        'error-found': (GObject.SIGNAL_RUN_FIRST, None, ())
+    }
     def __init__(self,log,*arg):
         GObject.GObject.__init__(self)
         self.logger = log
@@ -18,40 +21,19 @@ class Discovery(GObject.GObject):
         if (name == self.service_name):
             try:
                 info = zeroconf.get_service_info(type, name)
-                self.address =  socket.inet_ntoa(info.address)
+                self.address = socket.inet_ntoa(info.address)
                 self.logger.debug("Service found with address "+self.address)
             except AttributeError:
                 self.logger.debug ("Service: " + name + "Not have an address" + " info service " + str(info))
+                self.emit('error-found')
             except:
                 self.logger.debug("Service: " + name + "Unknow error")
+                self.emit('error-found')
             else:
                 self.logger.debug("Service found at : " + self.address + "zeroconf will close")
-                self.emit('ampli-found')
+                self.emit('ampli-found',self.address )
                 zeroconf.close()
-                return
 
-
-
-class MyListener(object):
-
-    def remove_service(self, zeroconf, type, name):
-        print("Service %s removed" % (name,))
-
-    def add_service(self, zeroconf, type, name):
-        try:
-            info = zeroconf.get_service_info(type, name)
-            print("Service %s added, at address: %s " % (name, socket.inet_ntoa(info.address)))
-        except AttributeError:
-            print ("Service: " + name + "Not have an address" + " info service " + str(info))
-        except:
-            print("Service: " + name + "Unknow error " +sys.exc_info()[0])
-
-
-
-zeroconf = Zeroconf()
-listener = MyListener()
-browser = ServiceBrowser(zeroconf, "_http._tcp.local.", listener)
-try:
-    input("Press enter to exit...\n\n")
-finally:
-    zeroconf.close()
+    def __del__(self):
+        self.logger = None
+        self.service_name = None
