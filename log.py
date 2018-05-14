@@ -9,7 +9,10 @@ class MyHandler(logging.Handler):
 
     def handle(self, rec):
         original = self.buffer.get_text(self.buffer.get_start_iter(), self.buffer.get_end_iter(),False )
-        self.buffer.set_text(rec.asctime + " - " + rec.name + " - " + rec.levelname + " - " + rec.msg + "\n" + original)
+        if isinstance(rec.msg, str):
+            self.buffer.set_text(rec.asctime + " - " + rec.name + " - " + rec.levelname + " - " + rec.msg + "\n" + original)
+        else:
+            self.buffer.set_text(rec.asctime + " - " + rec.name + " - " + rec.levelname + " - " + str(rec.msg) + "\n" + original)
 
 
 class Log():

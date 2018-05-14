@@ -17,18 +17,16 @@
     <property name="can_focus">False</property>
     <property name="stock">gtk-close</property>
   </object>
-  <object class="GtkImage" id="bConnect">
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-ok</property>
-  </object>
   <object class="GtkWindow" id="mainWin">
     <property name="can_focus">False</property>
     <property name="icon_name">audio-volume-high</property>
     <property name="gravity">north</property>
     <child type="titlebar">
-      <object class="GtkHeaderBar">
+      <object class="GtkHeaderBar" id="headerBar">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="title" translatable="yes">Remote control</property>
+        <property name="subtitle" translatable="yes">Not connected</property>
         <child>
           <object class="GtkButton" id="btPowerOff">
             <property name="visible">True</property>
@@ -38,18 +36,6 @@
             <property name="always_show_image">True</property>
             <signal name="clicked" handler="onPowerOff" swapped="no"/>
           </object>
-        </child>
-        <child>
-          <object class="GtkButton" id="btConnect">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="image">bConnect</property>
-            <signal name="clicked" handler="onConnect" swapped="no"/>
-          </object>
-          <packing>
-            <property name="position">2</property>
-          </packing>
         </child>
         <child>
           <object class="GtkButton" id="btClose">
@@ -74,7 +60,7 @@
           </object>
           <packing>
             <property name="pack_type">end</property>
-            <property name="position">3</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>
