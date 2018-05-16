@@ -10,19 +10,21 @@ Date       | Exp.
 """
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject, Pango
-
+from gi.repository import Gtk, GObject, Pango,Gdk
 
 
 class View(Gtk.Window):
 
     def __init__(self, **kw):
-        Gtk.Window.__init__(self, title="Hello World")
+        Gtk.Window.__init__(self, title="gControl-LX86")
+        self.set_size_request(800, 600)
+        self.set_icon_name("audio-volume-high")
+
 
 
         self.header_bar = Gtk.HeaderBar()
         self.header_bar.set_show_close_button(False)
-        self.header_bar.props.title = "HeaderBar example"
+        self.header_bar.props.title = "gControl-LX86"
         self.set_titlebar(self.header_bar)
 
         self.bt_power_off = Gtk.Button.new_from_icon_name("process-stop", Gtk.IconSize.BUTTON)
@@ -32,34 +34,153 @@ class View(Gtk.Window):
         self.bt_close.connect("clicked", self.on_close)
         self.header_bar.pack_end(self.bt_close)
 
-
         self.grid = Gtk.Grid()
         self.add(self.grid)
+        self.grid.compute_expand(True)
+
+        self.load_css()
 
         self.box = Gtk.Box(spacing=6)
         self.grid.add(self.box)
+        self.box.compute_expand(True)
 
-        self.button1 = Gtk.Button(label="Button 1")
-        self.box.pack_start(self.button1, True, True, 0)
-        self.button2 = Gtk.Button(label="Button 2")
-        self.box.pack_start(self.button2, True, True, 0)
-        self.button3 = Gtk.Button(label="Button 3")
-        self.box.pack_start(self.button3, True, True, 0)
+        css = "GtkButton { font: 24}"
+        self.bt_output_selection = Gtk.Button(label="Output")
+        self.bt_output_selection.set_hexpand(True)
+        self.bt_output_selection.set_size_request(-1, 100)
+        self.bt_output_selection.get_style_context().add_class("btn_moins")
+        self.box.pack_start(self.bt_output_selection, True, True, 0)
+
+        self.popover_outpup = Gtk.Popover()
+        vbox_output = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+
+        self.bt_dvd = Gtk.ModelButton("DVD")
+        self.bt_dvd.get_style_context().add_class("btn_moins")
+        vbox_output.pack_start(self.bt_dvd, False, True, 10)
+
+        self.bt_bray = Gtk.ModelButton("BD")
+        self.bt_bray.get_style_context().add_class("btn_moins")
+        vbox_output.pack_start(self.bt_bray, False, True, 10)
+
+        self.bt_dvr = Gtk.ModelButton("DVR")
+        self.bt_dvr.get_style_context().add_class("btn_moins")
+        vbox_output.pack_start(self.bt_dvr, False, True, 10)
+
+        self.bt_hdmi1 = Gtk.ModelButton("HDMI 1")
+        self.bt_hdmi1.get_style_context().add_class("btn_moins")
+        vbox_output.pack_start(self.bt_hdmi1, False, True, 10)
+
+        self.bt_hdmi2 = Gtk.ModelButton("HDMI 2")
+        self.bt_hdmi2.get_style_context().add_class("btn_moins")
+        vbox_output.pack_start(self.bt_hdmi2, False, True, 10)
+
+        self.bt_hdmi3 = Gtk.ModelButton("HDMI 3")
+        self.bt_hdmi3.get_style_context().add_class("btn_moins")
+        vbox_output.pack_start(self.bt_hdmi3, False, True, 10)
+        self.popover_outpup.add(vbox_output)
+        self.popover_outpup.set_position(Gtk.PositionType.BOTTOM)
+
+        self.bt_audio_select = Gtk.Button(label="Audio")
+        self.bt_audio_select.set_hexpand(True)
+        self.bt_audio_select.set_size_request(-1, 100)
+        self.bt_audio_select.get_style_context().add_class("btn_moins")
+        self.box.pack_start(self.bt_audio_select, True, True, 0)
+
+        self.popover_audio = Gtk.Popover()
+        vbox_audio = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+
+        bt_ext_stereo = Gtk.ModelButton("EXTENDED STEREO")
+        bt_ext_stereo.get_style_context().add_class("btn_moins")
+        vbox_audio.pack_start(bt_ext_stereo, False, True, 10)
+
+        bt_direct = Gtk.ModelButton("DIRECT")
+        bt_direct.get_style_context().add_class("btn_moins")
+        vbox_audio.pack_start(bt_direct, False, True, 10)
+
+        bt_pure_direct = Gtk.ModelButton("PUR DIRECT")
+        bt_pure_direct.get_style_context().add_class("btn_moins")
+        vbox_audio.pack_start(bt_pure_direct, False, True, 10)
+
+        bt_adv_sur = Gtk.ModelButton("ADV. SURROUND Cycle")
+        bt_adv_sur.get_style_context().add_class("btn_moins")
+        vbox_audio.pack_start(bt_adv_sur, False, True, 10)
+
+        bt_action = Gtk.ModelButton("ACTION")
+        bt_action.get_style_context().add_class("btn_moins")
+        vbox_audio.pack_start(bt_action, False, True, 10)
+
+        bt_drama = Gtk.ModelButton("DRAMA")
+        bt_drama.get_style_context().add_class("btn_moins")
+        vbox_audio.pack_start(bt_drama, False, True, 10)
+
+        bt_sci_fi = Gtk.ModelButton("SCI-FI")
+        bt_sci_fi.get_style_context().add_class("btn_moins")
+        vbox_audio.pack_start(bt_sci_fi, False, True, 10)
+
+        bt_mono = Gtk.ModelButton("MONO")
+        bt_mono.get_style_context().add_class("btn_moins")
+        vbox_audio.pack_start(bt_mono, False, True, 10)
 
 
+        self.popover_audio.add(vbox_audio)
+        self.popover_audio.set_position(Gtk.PositionType.BOTTOM)
 
+        self.bt_vol_up = Gtk.Button(label="+")
+        self.bt_vol_up.get_style_context().add_class("btn_moins")
+        self.bt_vol_up.set_hexpand(True)
+
+        self.box.pack_start(self.bt_vol_up, True, True, 0)
+        self.bt_vol_down = Gtk.Button(label="-")
+        self.bt_vol_down.set_hexpand(True)
+        self.bt_vol_down.get_style_context().add_class("btn_moins")
+        self.box.pack_start(self.bt_vol_down, True, True, 0)
+
+        self.label2 = Gtk.TextView()
+        self.label2.set_vexpand(True)
+        self.grid.attach(self.label2,0,1,1,1)
+
+        self.notebook = Gtk.Notebook()
+        self.notebook.set_valign(Gtk.Align.END)
+        self.notebook.set_size_request(-1, 200)
+        self.grid.attach(self.notebook,0,2,1,5)
+
+        self.scrolledWinPage1 = Gtk.ScrolledWindow()
         self.label = Gtk.TextView()
-        self.grid.attach(self.label,0,1,1,1)
+        self.scrolledWinPage1.add(self.label)
+        self.notebook.append_page(self.scrolledWinPage1, Gtk.Label('Log'))
+
+        self.scrolledWinPage2 = Gtk.ScrolledWindow()
+        self.info = Gtk.TextView()
+        self.scrolledWinPage2.add(self.info)
+
+        self.notebook.append_page(
+            self.scrolledWinPage2,
+            Gtk.Image.new_from_icon_name(
+                "help-about",
+                Gtk.IconSize.MENU
+            )
+        )
 
 
         self.show_all()
 
+    def load_css(self):
+        style_provider = Gtk.CssProvider()
+        css = open('bt_class.css', 'rb')
+        css_data = css.read()
+        css.close()
+        style_provider.load_from_data(css_data)
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(),
+            style_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
 
 
     def on_close(self,widget):
         Gtk.main_quit()
 
-    def getLogger(self):
+    def get_logger(self):
         return self.logger
 
     def _quit(self, button, *args):

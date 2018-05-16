@@ -16,49 +16,9 @@ from view import View
 from log import Log
 import telnetlib
 from zeroconf import ServiceBrowser, Zeroconf,ServiceStateChange
-from volume import Volume
+from ampli import Amplifier
 import socket
-import time
-from threading import Timer
 
-
-class Handler:
-    def __init__(self,log,controller,*args):
-        self.logger = log
-        self.ctrl = controller
-
-    def onDestroy(self, *args):
-        Gtk.main_quit()
-
-    def onButtonPressed(self,*args):
-        print("Hello World!")
-
-    def onPowerOff(self,*args):
-        self.logger.debug("Hello World!")
-
-
-    def onParameters(self,*args):
-        self.logger.debug("From parameters start getvolume")
-        self.ctrl.getVolume()
-
-
-    def onClose(self,*args):
-        Gtk.main_quit()
-
-    def onVolume(self,*args):
-        self.logger.debug("clicked powervol")
-
-    def onVolValChange(self,value,*args):
-        self.logger.debug("From controller handler new volume set :" + str(value.get_value()))
-        if self.ctrl.connected and self.ctrl.semaphore:
-            self.ctrl.semaphore = False
-            self.ctrl.vol.setVolume(value.get_value()*100)
-            self.ctrl.semaphore = True
-    def onPopDown(self):
-        pass
-
-    def onPopUp(self):
-        pass
 
 class Controller:
     def __init__(self):
@@ -66,6 +26,16 @@ class Controller:
         self.address_ip = None
         self._view = View()
         self._view.connect("destroy", Gtk.main_quit)
+        self._view.bt_audio_select.connect("clicked", self.on_audio_click)
+        self._view.bt_output_selection.connect("clicked", self.on_output_click)
+        self._view.bt_vol_up.connect("clicked", self.on_vol_up_click)
+        self._view.bt_vol_down.connect("clicked", self.on_vol_down_click)
+        self._view.bt_dvd.connect("clicked",self.on_dvd_select)
+        self._view.bt_bray.connect("clicked", self.on_bray_select)
+        self._view.bt_dvr.connect("clicked", self.on_dvr_select)
+        self._view.bt_hdmi1.connect("clicked", self.on_hdmi1_select)
+        self._view.bt_hdmi2.connect("clicked", self.on_hdmi2_select)
+        self._view.bt_hdmi3.connect("clicked", self.on_hdmi3_select)
 
         self.logger = Log(self._view.label).get_logger()
 
@@ -73,19 +43,52 @@ class Controller:
         self.connected = False
         self.needToRun = True
 
-        self.logger.debug("Controller start database")
-        self.logger.debug("Controller start view")
-        self.logger.debug("View is starting")
         self.logger.debug("Controller is starting")
-
-        #self._view.btVolume.connect("value-changed", self.value_changed)
-
 
         self.zeroconf = None
         self.listener = None
         self.browser = None
         self.semaphore = True
+        self.address = None
+        self.ampli = Amplifier(self.logger)
+        self.central_buffer = self._view.label2.get_buffer()
         self.start_discover()
+
+    def on_hdmi1_select(self, bt):
+        self.ampli.set_output("HDMI1")
+
+    def on_hdmi2_select(self, bt):
+        self.ampli.set_output("HDMI2")
+
+    def on_hdmi3_select(self, bt):
+        self.ampli.set_output("HDMI3")
+
+    def on_bray_select(self, bt):
+        self.ampli.set_output("BD")
+
+    def on_dvd_select(self, bt):
+        self.ampli.set_output("DVD")
+
+    def on_dvr_select(self, bt):
+        self.ampli.set_output("DVR")
+
+    def on_audio_click(self,button):
+        self._view.popover_audio.set_relative_to(button)
+        self._view.popover_audio.show_all()
+        self._view.popover_audio.popup()
+
+    def on_output_click(self,button):
+        self._view.popover_outpup.set_relative_to(button)
+        self._view.popover_outpup.show_all()
+        self._view.popover_outpup.popup()
+
+    def on_vol_up_click(self, bt):
+        self.ampli.set_volume_down()
+        self.get_volume()
+
+    def on_vol_down_click(self, bt):
+        self.ampli.set_volume_down()
+        self.get_volume()
 
     def value_changed(self, volumebutton, value):
         self.logger.debug("From controller volume change detected : " + str(value))
@@ -94,23 +97,22 @@ class Controller:
 
         if state_change is ServiceStateChange.Added:
             if (name == "SC-LX86._http._tcp.local."):
+                self.logger.debug("From controller find IP of amplifier")
                 info = zeroconf.get_service_info(service_type, name)
-                if info.address is not None :
-                    self.address = socket.inet_ntoa(info.address)
-                    self.logger.debug("Found at " + self.address)
-                    self.address_ip = self.address
-                    self._view.header.set_subtitle(self.address_ip)
-                    self.vol.setIP(self.address_ip)
+                if info.address is not None:
+                    self.address_ip = socket.inet_ntoa(info.address)
+                    self.logger.debug("Found at " + self.address_ip)
+                    self._view.header_bar.set_subtitle(self.address_ip)
+                    self.ampli.set_ip(self.address_ip)
+                    self.ampli.connect()
                     self.connected = True
                 zeroconf.close()
 
-    def getVolume(self):
+    def get_volume(self):
         self.semaphore = False
         self.logger.debug("From controller starting getvolume")
-        volume = self.vol.getVolume()
-        realValue = volume /100.0
-        self.logger.debug("From controller volume will be set to " +str(realValue))
-        self._view.btVolume.set_value(realValue)
+        volume = self.ampli.get_volume()
+        self.logger.debug("From controller volume is : " + str(volume))
         self.semaphore = True
 
     def start_discover(self):
@@ -131,6 +133,7 @@ class Controller:
         self.header.set_subtitle = 'Found'
 
     def __del__(self):
+        self.ampli.close()
         self.logger = None
         self.zeroconf = None
         self.listener = None
