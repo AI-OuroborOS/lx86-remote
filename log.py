@@ -17,25 +17,27 @@ class MyHandler(logging.Handler):
 
 class Log():
 
-    def __init__(self,label):
+    def __init__(self):
         self.logger = logging.getLogger('gestClasse.Database')
         self.logger.setLevel(logging.DEBUG)
 
         ch = logging.StreamHandler()
-        lblHandler = MyHandler(label)
         hdlr = logging.FileHandler('gestClasse.log')
 
         ch.setLevel(logging.DEBUG)
-        lblHandler.setLevel(logging.DEBUG)
         hdlr.setLevel(logging.DEBUG)
 
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        ch.setFormatter(formatter)
-        hdlr.setFormatter(formatter)
-        lblHandler.setFormatter(formatter)
+        self.formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        ch.setFormatter(self.formatter)
+        hdlr.setFormatter(self.formatter)
 
         self.logger.addHandler(ch)
         self.logger.addHandler(hdlr)
+
+    def set_view_label(self,label):
+        lblHandler = MyHandler(label)
+        lblHandler.setLevel(logging.DEBUG)
+        lblHandler.setFormatter(self.formatter)
         self.logger.addHandler(lblHandler)
 
     def get_logger(self):

@@ -29,9 +29,10 @@ class Amplifier:
             self.tn.close()
         except ConnectionAbortedError:
             self.logger.debug("From Amplifier can't close connection")
+        except AttributeError:
+            self.logger.debug("From Amplifier connection opened")
         else:
             self.connected = False
-            
 
     def set_direct_volume(self,vol):
         if self.connected:
@@ -71,7 +72,6 @@ class Amplifier:
             output = self.tn.read_until(b"\r\n")
             currentlevel = int(output[3:])  # Pioneer responds with "VOL###" (ignore the "VOL" part of the string)
         return currentlevel
-
 
     def get_volume(self):
         currentlevel =None

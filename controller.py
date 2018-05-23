@@ -14,45 +14,74 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from view import View
 from log import Log
-import telnetlib
-from zeroconf import ServiceBrowser, Zeroconf,ServiceStateChange
 from ampli import Amplifier
-import socket
+from config import Config
+from wiz import Assistant
 
 
 class Controller:
     def __init__(self):
 
         self.address_ip = None
-        self._view = View()
-        self._view.connect("destroy", Gtk.main_quit)
-        self._view.bt_audio_select.connect("clicked", self.on_audio_click)
-        self._view.bt_output_selection.connect("clicked", self.on_output_click)
-        self._view.bt_vol_up.connect("clicked", self.on_vol_up_click)
-        self._view.bt_vol_down.connect("clicked", self.on_vol_down_click)
-        self._view.bt_dvd.connect("clicked",self.on_dvd_select)
-        self._view.bt_bray.connect("clicked", self.on_bray_select)
-        self._view.bt_dvr.connect("clicked", self.on_dvr_select)
-        self._view.bt_hdmi1.connect("clicked", self.on_hdmi1_select)
-        self._view.bt_hdmi2.connect("clicked", self.on_hdmi2_select)
-        self._view.bt_hdmi3.connect("clicked", self.on_hdmi3_select)
-
-        self.logger = Log(self._view.label).get_logger()
-
         self.tn = None
         self.connected = False
         self.needToRun = True
-
-        self.logger.debug("Controller is starting")
-
         self.zeroconf = None
         self.listener = None
         self.browser = None
         self.semaphore = True
         self.address = None
+        self._view = None
+        self.ampli = None
+        self.central_buffer = None
+        self.assistant = None
+        self.log = Log()
+        self.logger = self.log.get_logger()
+        self.config = Config(self.logger)
+        if self.config.check_config():
+            self.start_view()
+            self.log.set_view_label(self._view.label)
+        else:
+            self.start_wiz()
+
+        self.logger.debug("Controller is starting")
+
+    def start_wiz(self):
+        self.assistant = Assistant()
+        self.assistant.show_all()
+        self.assistant.connect("close", self.on_close_clicked)
+
+    def start_view(self):
+        self._view = View()
+        self._view.bt_wiz.connect("clicked",self.on_wiz_clicked)
+        self._view.bt_audio_select.connect("clicked", self.on_audio_click)
+        self._view.bt_output_selection.connect("clicked", self.on_output_click)
+        self._view.bt_vol_up.connect("clicked", self.on_vol_up_click)
+        self._view.bt_vol_down.connect("clicked", self.on_vol_down_click)
+        self._view.bt_dvd.connect("clicked", self.on_dvd_select)
+        self._view.bt_bray.connect("clicked", self.on_bray_select)
+        self._view.bt_dvr.connect("clicked", self.on_dvr_select)
+        self._view.bt_hdmi1.connect("clicked", self.on_hdmi1_select)
+        self._view.bt_hdmi2.connect("clicked", self.on_hdmi2_select)
+        self._view.bt_hdmi3.connect("clicked", self.on_hdmi3_select)
+        self.address_ip = self.config.read_config()
+        self._view.set_subtitle("Address is : " +str(self.address_ip))
         self.ampli = Amplifier(self.logger)
         self.central_buffer = self._view.label2.get_buffer()
-        self.start_discover()
+        self.ampli.set_ip(self.address_ip)
+
+    def on_wiz_clicked(self,bt):
+        self.logger.debug("Lu")
+        self._view.destroy()
+        self.start_wiz()
+
+    def on_close_clicked(self, *args):
+        print("The 'Close' button has been clicked")
+        ip = self.assistant.address_ip
+        self.logger.debug("Ip :" +str(ip))
+        self.config.create_config(ip)
+        self.assistant.destroy()
+        self.start_view()
 
     def on_hdmi1_select(self, bt):
         self.ampli.set_output("HDMI1")
@@ -93,32 +122,12 @@ class Controller:
     def value_changed(self, volumebutton, value):
         self.logger.debug("From controller volume change detected : " + str(value))
 
-    def on_service_state_change(self,zeroconf, service_type, name, state_change):
-
-        if state_change is ServiceStateChange.Added:
-            if (name == "SC-LX86._http._tcp.local."):
-                self.logger.debug("From controller find IP of amplifier")
-                info = zeroconf.get_service_info(service_type, name)
-                if info.address is not None:
-                    self.address_ip = socket.inet_ntoa(info.address)
-                    self.logger.debug("Found at " + self.address_ip)
-                    self._view.header_bar.set_subtitle(self.address_ip)
-                    self.ampli.set_ip(self.address_ip)
-                    self.ampli.connect()
-                    self.connected = True
-                zeroconf.close()
-
     def get_volume(self):
         self.semaphore = False
         self.logger.debug("From controller starting getvolume")
         volume = self.ampli.get_volume()
         self.logger.debug("From controller volume is : " + str(volume))
         self.semaphore = True
-
-    def start_discover(self):
-        self.zeroconf = Zeroconf()
-        self.browser = ServiceBrowser(self.zeroconf, "_http._tcp.local.",  handlers=[self.on_service_state_change])
-
 
     def error(self,arg):
         self.logger.debug("From controller error found on discovery")
@@ -127,13 +136,9 @@ class Controller:
         self.logger.debug("From controller restart zeroconf")
         self.start_discover()
 
-    def found(self,arg,ip):
-        self.logger.debug("From controller Found "+str(ip))
-        self.address_ip = ip
-        self.header.set_subtitle = 'Found'
-
     def __del__(self):
-        self.ampli.close()
+        self.logger.debug("Controler autodestructed")
+        #self.ampli.close()
         self.logger = None
         self.zeroconf = None
         self.listener = None

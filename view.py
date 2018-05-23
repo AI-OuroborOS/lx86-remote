@@ -20,8 +20,6 @@ class View(Gtk.Window):
         self.set_size_request(800, 600)
         self.set_icon_name("audio-volume-high")
 
-
-
         self.header_bar = Gtk.HeaderBar()
         self.header_bar.set_show_close_button(False)
         self.header_bar.props.title = "gControl-LX86"
@@ -33,6 +31,11 @@ class View(Gtk.Window):
         self.bt_close = Gtk.Button.new_from_icon_name("window-close", Gtk.IconSize.BUTTON)
         self.bt_close.connect("clicked", self.on_close)
         self.header_bar.pack_end(self.bt_close)
+
+        self.bt_wiz = Gtk.Button.new_from_icon_name("gtk-edit", Gtk.IconSize.BUTTON)
+        self.header_bar.pack_end(self.bt_wiz)
+        self.header_bar.set_has_subtitle(True)
+        self.header_bar.set_subtitle("")
 
         self.grid = Gtk.Grid()
         self.add(self.grid)
@@ -160,8 +163,6 @@ class View(Gtk.Window):
                 Gtk.IconSize.MENU
             )
         )
-
-
         self.show_all()
 
     def load_css(self):
@@ -180,6 +181,8 @@ class View(Gtk.Window):
     def on_close(self,widget):
         Gtk.main_quit()
 
+    def set_subtitle(self,title):
+        self.header_bar.set_subtitle(title)
     def get_logger(self):
         return self.logger
 
