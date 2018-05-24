@@ -54,6 +54,7 @@ class Controller:
     def start_view(self):
         self._view = View()
         self._view.bt_wiz.connect("clicked",self.on_wiz_clicked)
+        self._view.bt_start_con.connect("clicked",self.connection)
         self._view.bt_audio_select.connect("clicked", self.on_audio_click)
         self._view.bt_output_selection.connect("clicked", self.on_output_click)
         self._view.bt_vol_up.connect("clicked", self.on_vol_up_click)
@@ -67,8 +68,15 @@ class Controller:
         self.address_ip = self.config.read_config()
         self._view.set_subtitle("Address is : " +str(self.address_ip))
         self.ampli = Amplifier(self.logger)
+
         self.central_buffer = self._view.label2.get_buffer()
         self.ampli.set_ip(self.address_ip)
+
+    def connection(self,bt):
+        if self.ampli.is_connected():
+            self.ampli.close()
+        else:
+            self.ampli.connect()
 
     def on_wiz_clicked(self,bt):
         self.logger.debug("Lu")
@@ -112,12 +120,13 @@ class Controller:
         self._view.popover_outpup.popup()
 
     def on_vol_up_click(self, bt):
-        self.ampli.set_volume_down()
-        self.get_volume()
+
+        self.ampli.set_volume_up()
+        #self.get_volume()
 
     def on_vol_down_click(self, bt):
         self.ampli.set_volume_down()
-        self.get_volume()
+        #self.get_volume()
 
     def value_changed(self, volumebutton, value):
         self.logger.debug("From controller volume change detected : " + str(value))

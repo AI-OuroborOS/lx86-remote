@@ -73,15 +73,15 @@ class Assistant(Gtk.Assistant):
     def on_service_state_change(self,zeroconf, service_type, name, state_change):
 
         if state_change is ServiceStateChange.Added:
-            #if (name == "SC-LX86._http._tcp.local."):
-            actual = self.label_detect.get_label()
-            self.label_detect.set_label(actual + "\n Amplifier found")
-            info = zeroconf.get_service_info(service_type, name)
-            if info.address is not None:
-                self.address_ip = socket.inet_ntoa(info.address)
+            if (name == "SC-LX86._http._tcp.local."):
                 actual = self.label_detect.get_label()
-                self.label_detect.set_label(actual + "\n at ip : " + self.address_ip)
-            zeroconf.close()
+                self.label_detect.set_label(actual + "\n Amplifier found")
+                info = zeroconf.get_service_info(service_type, name)
+                if info.address is not None:
+                    self.address_ip = socket.inet_ntoa(info.address)
+                    actual = self.label_detect.get_label()
+                    self.label_detect.set_label(actual + "\n at ip : " + self.address_ip)
+                zeroconf.close()
 
     def start_discover(self,bt):
         self.zeroconf = Zeroconf()

@@ -25,6 +25,9 @@ class View(Gtk.Window):
         self.header_bar.props.title = "gControl-LX86"
         self.set_titlebar(self.header_bar)
 
+        self.bt_start_con = Gtk.Button.new_from_icon_name("gtk-connect", Gtk.IconSize.BUTTON)
+        self.header_bar.pack_start(self.bt_start_con)
+
         self.bt_power_off = Gtk.Button.new_from_icon_name("process-stop", Gtk.IconSize.BUTTON)
         self.header_bar.pack_start(self.bt_power_off)
 
@@ -57,27 +60,27 @@ class View(Gtk.Window):
         self.popover_outpup = Gtk.Popover()
         vbox_output = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
-        self.bt_dvd = Gtk.ModelButton("DVD")
+        self.bt_dvd = Gtk.ModelButton(label="DVD")
         self.bt_dvd.get_style_context().add_class("btn_moins")
         vbox_output.pack_start(self.bt_dvd, False, True, 10)
 
-        self.bt_bray = Gtk.ModelButton("BD")
+        self.bt_bray = Gtk.ModelButton(label="BD")
         self.bt_bray.get_style_context().add_class("btn_moins")
         vbox_output.pack_start(self.bt_bray, False, True, 10)
 
-        self.bt_dvr = Gtk.ModelButton("DVR")
+        self.bt_dvr = Gtk.ModelButton(label="DVR")
         self.bt_dvr.get_style_context().add_class("btn_moins")
         vbox_output.pack_start(self.bt_dvr, False, True, 10)
 
-        self.bt_hdmi1 = Gtk.ModelButton("HDMI 1")
+        self.bt_hdmi1 = Gtk.ModelButton(label="HDMI 1")
         self.bt_hdmi1.get_style_context().add_class("btn_moins")
         vbox_output.pack_start(self.bt_hdmi1, False, True, 10)
 
-        self.bt_hdmi2 = Gtk.ModelButton("HDMI 2")
+        self.bt_hdmi2 = Gtk.ModelButton(label="HDMI 2")
         self.bt_hdmi2.get_style_context().add_class("btn_moins")
         vbox_output.pack_start(self.bt_hdmi2, False, True, 10)
 
-        self.bt_hdmi3 = Gtk.ModelButton("HDMI 3")
+        self.bt_hdmi3 = Gtk.ModelButton(label="HDMI 3")
         self.bt_hdmi3.get_style_context().add_class("btn_moins")
         vbox_output.pack_start(self.bt_hdmi3, False, True, 10)
         self.popover_outpup.add(vbox_output)
@@ -92,35 +95,35 @@ class View(Gtk.Window):
         self.popover_audio = Gtk.Popover()
         vbox_audio = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
-        bt_ext_stereo = Gtk.ModelButton("EXTENDED STEREO")
+        bt_ext_stereo = Gtk.ModelButton(label="EXTENDED STEREO")
         bt_ext_stereo.get_style_context().add_class("btn_moins")
         vbox_audio.pack_start(bt_ext_stereo, False, True, 10)
 
-        bt_direct = Gtk.ModelButton("DIRECT")
+        bt_direct = Gtk.ModelButton(label="DIRECT")
         bt_direct.get_style_context().add_class("btn_moins")
         vbox_audio.pack_start(bt_direct, False, True, 10)
 
-        bt_pure_direct = Gtk.ModelButton("PUR DIRECT")
+        bt_pure_direct = Gtk.ModelButton(label="PUR DIRECT")
         bt_pure_direct.get_style_context().add_class("btn_moins")
         vbox_audio.pack_start(bt_pure_direct, False, True, 10)
 
-        bt_adv_sur = Gtk.ModelButton("ADV. SURROUND Cycle")
+        bt_adv_sur = Gtk.ModelButton(label="ADV. SURROUND Cycle")
         bt_adv_sur.get_style_context().add_class("btn_moins")
         vbox_audio.pack_start(bt_adv_sur, False, True, 10)
 
-        bt_action = Gtk.ModelButton("ACTION")
+        bt_action = Gtk.ModelButton(label="ACTION")
         bt_action.get_style_context().add_class("btn_moins")
         vbox_audio.pack_start(bt_action, False, True, 10)
 
-        bt_drama = Gtk.ModelButton("DRAMA")
+        bt_drama = Gtk.ModelButton(label="DRAMA")
         bt_drama.get_style_context().add_class("btn_moins")
         vbox_audio.pack_start(bt_drama, False, True, 10)
 
-        bt_sci_fi = Gtk.ModelButton("SCI-FI")
+        bt_sci_fi = Gtk.ModelButton(label="SCI-FI")
         bt_sci_fi.get_style_context().add_class("btn_moins")
         vbox_audio.pack_start(bt_sci_fi, False, True, 10)
 
-        bt_mono = Gtk.ModelButton("MONO")
+        bt_mono = Gtk.ModelButton(label="MONO")
         bt_mono.get_style_context().add_class("btn_moins")
         vbox_audio.pack_start(bt_mono, False, True, 10)
 
@@ -150,7 +153,7 @@ class View(Gtk.Window):
         self.scrolledWinPage1 = Gtk.ScrolledWindow()
         self.label = Gtk.TextView()
         self.scrolledWinPage1.add(self.label)
-        self.notebook.append_page(self.scrolledWinPage1, Gtk.Label('Log'))
+        self.notebook.append_page(self.scrolledWinPage1, Gtk.Label(label='Log'))
 
         self.scrolledWinPage2 = Gtk.ScrolledWindow()
         self.info = Gtk.TextView()

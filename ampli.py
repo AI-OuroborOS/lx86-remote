@@ -10,8 +10,12 @@ class Amplifier:
         self.tn = None
         self.connected = False
 
+    def is_connected(self):
+        return self.connected
+
     def set_ip(self, ip):
         self.address_ip = ip
+        self.logger.debug("From ampli setting ip " + self.address_ip)
 
     def connect(self):
         try:
@@ -22,6 +26,8 @@ class Amplifier:
             self.logger.debug("From Amplifier wait finish")
         else:
             self.connected = True
+            self.tn.write(b"?V\r\n")  # send "?V" command to get the current Amplifier level
+            output = self.tn.read_until(b"\r\n")
 
     def close(self):
         self.logger.debug("From Amplifier connection close")
