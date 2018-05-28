@@ -16,6 +16,7 @@ from gi.repository import Gtk, GObject, Pango,Gdk
 class View(Gtk.Window):
 
     def __init__(self, **kw):
+        self.line_position = 0
         Gtk.Window.__init__(self, title="gControl-LX86")
         self.set_size_request(800, 600)
         self.set_icon_name("audio-volume-high")
@@ -40,14 +41,20 @@ class View(Gtk.Window):
         self.header_bar.set_has_subtitle(True)
         self.header_bar.set_subtitle("")
 
+
         self.grid = Gtk.Grid()
         self.add(self.grid)
         self.grid.compute_expand(True)
 
-        self.load_css()
+        self.infobar = Gtk.InfoBar()
+        self.infobar.set_show_close_button(True)
+        self.infobar.connect("response", self.on_infobar_response)
+        self.grid.attach(self.infobar, 0, self.line_position, 1, 1)
 
+        self.load_css()
+        self.line_position += 1
         self.box = Gtk.Box(spacing=6)
-        self.grid.add(self.box)
+        self.grid.attach(self.box,0,self.line_position,1,1)
         self.box.compute_expand(True)
 
         css = "GtkButton { font: 24}"
@@ -141,14 +148,54 @@ class View(Gtk.Window):
         self.bt_vol_down.get_style_context().add_class("btn_moins")
         self.box.pack_start(self.bt_vol_down, True, True, 0)
 
-        self.label2 = Gtk.TextView()
-        self.label2.set_vexpand(True)
-        self.grid.attach(self.label2,0,1,1,1)
+        # self.label2 = Gtk.TextView()
+        # self.label2.set_vexpand(True)
+        # self.grid.attach(self.label2,0,2,1,1)
 
+        self.line_position += 1
+        self.box_info = Gtk.Box(spacing=10)
+        self.box_info.set_homogeneous(False)
+        self.grid.attach(self.box_info,0,self.line_position,1,1)
+        self.box_info.compute_expand(True)
+
+
+
+        self.info_volume = Gtk.Label(label = "Vol : ")
+        #self.info_volume.set_line_wrap(True)
+        self.info_volume.set_justify(Gtk.Justification.RIGHT)
+        self.info_volume.get_style_context().add_class("info_texte")
+        self.box_info.pack_start(self.info_volume,False,False,0)
+
+        self.lbl_volume = Gtk.Label(label="---")
+        self.lbl_volume.set_justify(Gtk.Justification.LEFT)
+        self.lbl_volume.get_style_context().add_class("info_texte")
+        self.box_info.pack_start(self.lbl_volume,False, False,0)
+
+        self.info_input = Gtk.Label(label="Input :")
+        self.info_input.get_style_context().add_class("info_texte")
+        self.box_info.pack_start(self.info_input,False, False, 0)
+
+        self.lbl_input = Gtk.Label(label="DVD")
+        self.lbl_input.get_style_context().add_class("info_texte")
+        self.lbl_input.set_justify(Gtk.Justification.RIGHT)
+        self.box_info.pack_start(self.lbl_input, False, False, 0)
+
+        self.line_position += 1
+        self.drawing_area = Gtk.DrawingArea()
+        # add the type of events we are interested in retrieving, skip this step and your events will never fire
+        self.drawing_area.add_events(Gdk.EventMask.TOUCH_MASK)
+        self.drawing_area.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+        self.drawing_area.connect('button_press_event', self.touched)
+        self.drawing_area.connect('touch-event', self.touched)
+        self.drawing_area.set_double_buffered(False)
+        self.drawing_area.set_vexpand(True)
+        self.grid.attach(self.drawing_area,0,self.line_position,1,1)
+
+        self.line_position += 1
         self.notebook = Gtk.Notebook()
         self.notebook.set_valign(Gtk.Align.END)
         self.notebook.set_size_request(-1, 200)
-        self.grid.attach(self.notebook,0,2,1,5)
+        self.grid.attach(self.notebook,0,self.line_position,1,5)
 
         self.scrolledWinPage1 = Gtk.ScrolledWindow()
         self.label = Gtk.TextView()
@@ -167,6 +214,12 @@ class View(Gtk.Window):
             )
         )
         self.show_all()
+
+    def touched(self,widget,event):
+        pass
+
+    def on_infobar_response(self):
+        pass
 
     def load_css(self):
         style_provider = Gtk.CssProvider()

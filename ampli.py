@@ -56,27 +56,35 @@ class Amplifier:
             self.tn.write(cmd)
 
     def set_volume_up(self):
-        currentlevel = None
+        currentlevel = "Not Connected"
         if self.connected:
             self.tn.write(b"?V\r\n")  # send "?V" command to get the current Amplifier level
             output = self.tn.read_until(b"\r\n")
+            while not "VOL" in str(output):
+                output = self.tn.read_until(b"\r\n")
             currentlevel = int(output[3:])  # Pioneer responds with "VOL###" (ignore the "VOL" part of the string)
             if currentlevel < 100:
                 self.tn.write(b"VU\r\n")
-            output = self.tn.read_until(b"\r\n")
-            currentlevel = int(output[3:])  # Pioneer responds with "VOL###" (ignore the "VOL" part of the string)
+                output = self.tn.read_until(b"\r\n")
+                while not "VOL" in str(output):
+                    output = self.tn.read_until(b"\r\n")
+                currentlevel = int(output[3:])  # Pioneer responds with "VOL###" (ignore the "VOL" part of the string)
         return currentlevel
 
     def set_volume_down(self):
-        currentlevel = None
+        currentlevel = "Not connected"
         if self.connected:
             self.tn.write(b"?V\r\n")  # send "?V" command to get the current Amplifier level
             output = self.tn.read_until(b"\r\n")
+            while not "VOL" in str(output):
+                output = self.tn.read_until(b"\r\n")
             currentlevel = int(output[3:])  # Pioneer responds with "VOL###" (ignore the "VOL" part of the string)
             if currentlevel > 0:
                 self.tn.write(b"VD\r\n")
-            output = self.tn.read_until(b"\r\n")
-            currentlevel = int(output[3:])  # Pioneer responds with "VOL###" (ignore the "VOL" part of the string)
+                output = self.tn.read_until(b"\r\n")
+                while not "VOL" in str(output):
+                    output = self.tn.read_until(b"\r\n")
+                currentlevel = int(output[3:])  # Pioneer responds with "VOL###" (ignore the "VOL" part of the string)
         return currentlevel
 
     def get_volume(self):
