@@ -153,34 +153,46 @@ class View(Gtk.Window):
         # self.grid.attach(self.label2,0,2,1,1)
 
         self.line_position += 1
-        self.box_info = Gtk.Box(spacing=10)
-        self.box_info.set_homogeneous(False)
-        self.grid.attach(self.box_info,0,self.line_position,1,1)
-        self.box_info.compute_expand(True)
+        #self.box_info = Gtk.Box(spacing=10)
+        #self.box_info.set_homogeneous(False)
+        #self.box_info.compute_expand(True)
+        #self.grid.attach(self.box_info,0,self.line_position,1,1)
 
-
+        self.grid_info = Gtk.Grid()
+        self.grid_info.compute_expand(True)
+        self.grid.attach(self.grid_info, 0, self.line_position, 1, 1)
+        #self.box_info.pack_start(self.grid_info,True,True,0)
 
         self.info_volume = Gtk.Label(label = "Vol : ")
-        #self.info_volume.set_line_wrap(True)
         self.info_volume.set_justify(Gtk.Justification.RIGHT)
         self.info_volume.get_style_context().add_class("info_texte")
-        self.box_info.pack_start(self.info_volume,False,False,0)
+        #self.box_info.pack_start(self.info_volume,False,False,0)
+        self.grid_info.attach(self.info_volume, 0, 0, 1, 1)
 
-        self.lbl_volume = Gtk.Label(label="---")
-        self.lbl_volume.set_justify(Gtk.Justification.LEFT)
+        self.lbl_volume = Gtk.Entry()#(label="---")
+        #self.lbl_volume.set_justify(Gtk.Justification.LEFT)
         self.lbl_volume.get_style_context().add_class("info_texte")
-        self.box_info.pack_start(self.lbl_volume,False, False,0)
+        self.lbl_volume.set_editable(False)
+        #self.box_info.pack_start(self.lbl_volume,False, False,0)
+        self.grid_info.attach(self.lbl_volume, 1, 0, 1, 1)
 
         self.info_input = Gtk.Label(label="Input :")
         self.info_input.get_style_context().add_class("info_texte")
-        self.box_info.pack_start(self.info_input,False, False, 0)
+        #self.box_info.pack_start(self.info_input,False, False, 0)
+        self.grid_info.attach(self.info_input, 0, 1, 1, 1)
 
-        self.lbl_input = Gtk.Label(label="DVD")
+        self.lbl_input = Gtk.Entry()#(label="DVD")
         self.lbl_input.get_style_context().add_class("info_texte")
-        self.lbl_input.set_justify(Gtk.Justification.RIGHT)
-        self.box_info.pack_start(self.lbl_input, False, False, 0)
+        self.lbl_input.set_editable(False)
+        #self.lbl_input.set_justify(Gtk.Justification.RIGHT)
+        #self.box_info.pack_start(self.lbl_input, False, False, 0)
+        self.grid_info.attach(self.lbl_input, 1, 1, 1, 1)
 
         self.line_position += 1
+        self.frame = Gtk.Frame()
+        self.grid.attach(self.frame, 0, self.line_position, 1, 5)
+
+
         self.drawing_area = Gtk.DrawingArea()
         # add the type of events we are interested in retrieving, skip this step and your events will never fire
         self.drawing_area.add_events(Gdk.EventMask.TOUCH_MASK)
@@ -189,7 +201,8 @@ class View(Gtk.Window):
         self.drawing_area.connect('touch-event', self.touched)
         self.drawing_area.set_double_buffered(False)
         self.drawing_area.set_vexpand(True)
-        self.grid.attach(self.drawing_area,0,self.line_position,1,1)
+        self.frame.add(self.drawing_area)
+
 
         self.line_position += 1
         self.notebook = Gtk.Notebook()
