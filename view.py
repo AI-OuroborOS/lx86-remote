@@ -8,10 +8,73 @@ Date       | Exp.
 -----------|------------------------------------
 18.01.2018 | First version
 """
+import math
+import cairo
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GObject, Pango,Gdk
 
+SIZE = 30
+
+class DrawingAreaFrame(Gtk.Frame):
+    def __init__(self, css=None, border_width=0):
+        super().__init__()
+        self.set_border_width(border_width)
+        #self.set_size_request(100, 100)
+        self.vexpand = True
+        self.hexpand = True
+        self.surface = None
+
+        self.area = Gtk.DrawingArea()
+        self.area.set_hexpand(True)
+        self.area.set_vexpand(True)
+        self.add(self.area)
+
+        self.area.connect("draw", self.on_draw)
+        self.area.connect('configure-event', self.on_configure)
+
+    def init_surface(self, area):
+        # Destroy previous buffer
+        if self.surface is not None:
+            self.surface.finish()
+            self.surface = None
+
+        # Create a new buffer
+        self.surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, area.get_allocated_width(), area.get_allocated_height())
+
+    def redraw(self):
+        self.init_surface(self.area)
+        context = cairo.Context(self.surface)
+        context.scale(self.surface.get_width(), self.surface.get_height())
+        self.do_drawing(context)
+        self.surface.flush()
+
+    def on_configure(self, area, event, data=None):
+        self.redraw()
+        return False
+
+    def on_draw(self, area, context):
+        if self.surface is not None:
+            context.set_source_surface(self.surface, 0.0, 0.0)
+            context.paint()
+        else:
+            print('Invalid surface')
+        return False
+
+    def draw_radial_gradient_rect(self, ctx):
+        x0, y0 = 0.3, 0.3
+        x1, y1 = 0.5, 0.5
+        r0 = 0
+        r1 = 1
+        pattern = cairo.RadialGradient(x0, y0, r0, x1, y1, r1)
+        pattern.add_color_stop_rgba(0, 1,1,0.5, 1)
+        pattern.add_color_stop_rgba(1, 0.2,0.4,0.1, 1)
+        ctx.rectangle(0, 0, 1, 1)
+        ctx.set_source(pattern)
+        ctx.fill()
+
+    def do_drawing(self, ctx):
+        self.draw_radial_gradient_rect(ctx)
 
 class View(Gtk.Window):
 
@@ -57,8 +120,7 @@ class View(Gtk.Window):
         self.grid.attach(self.box,0,self.line_position,1,1)
         self.box.compute_expand(True)
 
-        css = "GtkButton { font: 24}"
-        self.bt_output_selection = Gtk.Button(label="Output")
+        self.bt_output_selection = Gtk.Button(label="Input")
         self.bt_output_selection.set_hexpand(True)
         self.bt_output_selection.set_size_request(-1, 100)
         self.bt_output_selection.get_style_context().add_class("btn_moins")
@@ -148,60 +210,56 @@ class View(Gtk.Window):
         self.bt_vol_down.get_style_context().add_class("btn_moins")
         self.box.pack_start(self.bt_vol_down, True, True, 0)
 
-        # self.label2 = Gtk.TextView()
-        # self.label2.set_vexpand(True)
-        # self.grid.attach(self.label2,0,2,1,1)
 
         self.line_position += 1
-        #self.box_info = Gtk.Box(spacing=10)
-        #self.box_info.set_homogeneous(False)
-        #self.box_info.compute_expand(True)
-        #self.grid.attach(self.box_info,0,self.line_position,1,1)
-
         self.grid_info = Gtk.Grid()
-        self.grid_info.compute_expand(True)
+        #self.grid_info.compute_expand(True)
+        self.grid_info.set_row_homogeneous(False)
         self.grid.attach(self.grid_info, 0, self.line_position, 1, 1)
-        #self.box_info.pack_start(self.grid_info,True,True,0)
 
         self.info_volume = Gtk.Label(label = "Vol : ")
         self.info_volume.set_justify(Gtk.Justification.RIGHT)
         self.info_volume.get_style_context().add_class("info_texte")
-        #self.box_info.pack_start(self.info_volume,False,False,0)
+        self.info_volume.set_vexpand(False)
         self.grid_info.attach(self.info_volume, 0, 0, 1, 1)
 
-        self.lbl_volume = Gtk.Entry()#(label="---")
-        #self.lbl_volume.set_justify(Gtk.Justification.LEFT)
+        self.lbl_volume = Gtk.Entry()
+        self.lbl_volume.set_hexpand(True)
+        self.lbl_volume.set_vexpand(False)
+        self.lbl_volume.set_size_request(-1, 20)
         self.lbl_volume.get_style_context().add_class("info_texte")
         self.lbl_volume.set_editable(False)
-        #self.box_info.pack_start(self.lbl_volume,False, False,0)
         self.grid_info.attach(self.lbl_volume, 1, 0, 1, 1)
+
+
+        self.drawing_area = DrawingAreaFrame()
+        self.grid_info.attach(self.drawing_area, 3, 0, 2, 20)
 
         self.info_input = Gtk.Label(label="Input :")
         self.info_input.get_style_context().add_class("info_texte")
-        #self.box_info.pack_start(self.info_input,False, False, 0)
+        self.info_input.set_vexpand(False)
         self.grid_info.attach(self.info_input, 0, 1, 1, 1)
 
         self.lbl_input = Gtk.Entry()#(label="DVD")
         self.lbl_input.get_style_context().add_class("info_texte")
+        self.lbl_input.set_hexpand(True)
+        self.lbl_input.set_vexpand(False)
         self.lbl_input.set_editable(False)
-        #self.lbl_input.set_justify(Gtk.Justification.RIGHT)
-        #self.box_info.pack_start(self.lbl_input, False, False, 0)
         self.grid_info.attach(self.lbl_input, 1, 1, 1, 1)
 
-        self.line_position += 1
-        self.frame = Gtk.Frame()
-        self.grid.attach(self.frame, 0, self.line_position, 1, 5)
+        self.info_audio = Gtk.Label(label="Audio :")
+        self.info_audio.get_style_context().add_class("info_texte")
+        self.info_audio.set_vexpand(False)
+        self.grid_info.attach(self.info_audio, 0, 2, 1, 1)
+
+        self.lbl_audio = Gtk.Entry()  # (label="DVD")
+        self.lbl_audio.get_style_context().add_class("info_texte")
+        self.lbl_audio.set_hexpand(True)
+        self.lbl_audio.set_vexpand(False)
+        self.lbl_audio.set_editable(False)
+        self.grid_info.attach(self.lbl_audio, 1, 2, 1, 1)
 
 
-        self.drawing_area = Gtk.DrawingArea()
-        # add the type of events we are interested in retrieving, skip this step and your events will never fire
-        self.drawing_area.add_events(Gdk.EventMask.TOUCH_MASK)
-        self.drawing_area.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
-        self.drawing_area.connect('button_press_event', self.touched)
-        self.drawing_area.connect('touch-event', self.touched)
-        self.drawing_area.set_double_buffered(False)
-        self.drawing_area.set_vexpand(True)
-        self.frame.add(self.drawing_area)
 
 
         self.line_position += 1
@@ -227,6 +285,103 @@ class View(Gtk.Window):
             )
         )
         self.show_all()
+
+    def triangle(self, ctx):
+        ctx.move_to(SIZE, 0)
+        ctx.rel_line_to(SIZE, 2 * SIZE)
+        ctx.rel_line_to(-2 * SIZE, 0)
+        ctx.close_path()
+
+    def square(self, ctx):
+        ctx.move_to(0, 0)
+        ctx.rel_line_to(2 * SIZE, 0)
+        ctx.rel_line_to(0, 2 * SIZE)
+        ctx.rel_line_to(-2 * SIZE, 0)
+        ctx.close_path()
+
+    def bowtie(self, ctx):
+        ctx.move_to(0, 0)
+        ctx.rel_line_to(2 * SIZE, 2 * SIZE)
+        ctx.rel_line_to(-2 * SIZE, 0)
+        ctx.rel_line_to(2 * SIZE, -2 * SIZE)
+        ctx.close_path()
+
+    def inf(self, ctx):
+        ctx.move_to(0, SIZE)
+        ctx.rel_curve_to(0, SIZE, SIZE, SIZE, 2 * SIZE, 0)
+        ctx.rel_curve_to(SIZE, -SIZE, 2 * SIZE, -SIZE, 2 * SIZE, 0)
+        ctx.rel_curve_to(0, SIZE, -SIZE, SIZE, - 2 * SIZE, 0)
+        ctx.rel_curve_to(-SIZE, -SIZE, - 2 * SIZE, -SIZE, - 2 * SIZE, 0)
+        ctx.close_path()
+
+    def draw_shapes(self, ctx, x, y, fill):
+        ctx.save()
+
+        ctx.new_path()
+        ctx.translate(x + SIZE, y + SIZE)
+        self.bowtie(ctx)
+        if fill:
+            ctx.fill()
+        else:
+            ctx.stroke()
+
+        ctx.new_path()
+        ctx.translate(3 * SIZE, 0)
+        self.square(ctx)
+        if fill:
+            ctx.fill()
+        else:
+            ctx.stroke()
+
+        ctx.new_path()
+        ctx.translate(3 * SIZE, 0)
+        self.triangle(ctx)
+        if fill:
+            ctx.fill()
+        else:
+            ctx.stroke()
+
+        ctx.new_path()
+        ctx.translate(3 * SIZE, 0)
+        self.inf(ctx)
+        if fill:
+            ctx.fill()
+        else:
+            ctx.stroke()
+
+        ctx.restore()
+
+    def fill_shapes(self, ctx, x, y):
+        self.draw_shapes(ctx, x, y, True)
+
+    def stroke_shapes(self, ctx, x, y):
+        self.draw_shapes(ctx, x, y, False)
+
+    def draw(self, da, ctx):
+        ctx.set_source_rgb(255, 0, 0)
+
+        ctx.set_line_width(SIZE / 4)
+        ctx.set_tolerance(0.1)
+
+        ctx.set_line_join(cairo.LINE_JOIN_ROUND)
+        ctx.set_dash([SIZE / 4.0, SIZE / 4.0], 0)
+        self.stroke_shapes(ctx, 0, 0)
+
+        ctx.set_dash([], 0)
+        self.stroke_shapes(ctx, 0, 3 * SIZE)
+
+        ctx.set_line_join(cairo.LINE_JOIN_BEVEL)
+        self.stroke_shapes(ctx, 0, 6 * SIZE)
+
+        ctx.set_line_join(cairo.LINE_JOIN_MITER)
+        self.stroke_shapes(ctx, 0, 9 * SIZE)
+
+        self.fill_shapes(ctx, 0, 12 * SIZE)
+
+        ctx.set_line_join(cairo.LINE_JOIN_BEVEL)
+        self.fill_shapes(ctx, 0, 15 * SIZE)
+        ctx.set_source_rgb(1, 0, 0)
+        self.stroke_shapes(ctx, 0, 15 * SIZE)
 
     def touched(self,widget,event):
         pass
